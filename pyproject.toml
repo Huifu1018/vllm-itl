@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vllm-itl"
+version = "0.1.0"
+description = "vLLM 0.15.1 integration for TokenTiming / TOKEN_ITL heterogeneous-vocabulary speculative decoding."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Huifu1018" }]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/Huifu1018/vllm-itl"
+Repository = "https://github.com/Huifu1018/vllm-itl"
+Issues = "https://github.com/Huifu1018/vllm-itl/issues"
+
+[project.optional-dependencies]
+vllm = [
+  "vllm==0.15.1",
+  "torch",
+  "transformers>=4.45",
+  "accelerate",
+  "sentencepiece>=0.2",
+  "safetensors>=0.4",
+]
+hf = [
+  "torch",
+  "transformers>=4.45",
+  "accelerate",
+  "sentencepiece>=0.2",
+  "safetensors>=0.4",
+]
+dev = ["build", "pytest"]
+
+[project.scripts]
+vllm-itl-serve = "vllm_itl.cli.serve:main"
+vllm-itl-preflight = "vllm_itl.cli.preflight:main"
+
+[project.entry-points."vllm.general_plugins"]
+vllm_itl = "vllm_itl.vllm.plugin:activate"
+
+[tool.setuptools.packages.find]
+include = ["vllm_itl*"]
