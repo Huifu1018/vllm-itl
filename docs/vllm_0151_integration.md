@@ -23,5 +23,10 @@ and speculative metrics. The default vLLM rejection sampler handles greedy and
 sampling requests with deterministic-proposal semantics when no draft
 probability rows are provided.
 
+With tensor parallelism, only `VLLM_ITL_DRAFT_TP_RANK` loads and executes the
+HF draft model. The proxy token ids are broadcast through vLLM's TP
+communication group to the other ranks. This avoids duplicating the full HF
+draft model on every TP worker.
+
 The integration is deliberately version-pinned because it patches internal
 vLLM v1 runner methods.

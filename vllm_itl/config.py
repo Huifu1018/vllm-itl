@@ -23,6 +23,16 @@ def _env_int(name: str, default: int | None) -> int | None:
     return parsed
 
 
+def _env_non_negative_int(name: str, default: int) -> int:
+    value = os.getenv(name)
+    if value is None or value.strip() == "":
+        return default
+    parsed = int(value)
+    if parsed < 0:
+        raise ValueError(f"{name} must be non-negative when set.")
+    return parsed
+
+
 def _env_float(name: str, default: float | None) -> float | None:
     value = os.getenv(name)
     if value is None or value.strip() == "":
@@ -96,6 +106,7 @@ class TokenITLConfig:
     allow_sampling: bool = True
     log_proposals: bool = False
     metrics_log_interval: float | None = 60.0
+    draft_tp_rank: int = 0
 
     @classmethod
     def from_env(cls) -> "TokenITLConfig":
@@ -114,4 +125,5 @@ class TokenITLConfig:
             allow_sampling=_env_bool("VLLM_ITL_ALLOW_SAMPLING", True),
             log_proposals=_env_bool("VLLM_ITL_LOG_PROPOSALS", False),
             metrics_log_interval=_env_float("VLLM_ITL_METRICS_LOG_INTERVAL", 60.0),
+            draft_tp_rank=_env_non_negative_int("VLLM_ITL_DRAFT_TP_RANK", 0),
         )

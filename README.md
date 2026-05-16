@@ -44,9 +44,11 @@ vllm-itl-serve nvidia/MiniMax-M2.7-NVFP4 \
   --host 0.0.0.0 \
   --port 8000 \
   --trust-remote-code \
-  --tensor-parallel-size 8 \
+  --generation-config vllm \
+  --tensor-parallel-size 4 \
   --token-itl-draft-model Qwen/Qwen2.5-1.5B-Instruct \
-  --token-itl-num-speculative-tokens 5 \
+  --token-itl-draft-tp-rank 0 \
+  --token-itl-num-speculative-tokens 2 \
   --token-itl-dtw-window 8
 ```
 
@@ -66,6 +68,10 @@ All ordinary vLLM arguments are forwarded unchanged. The wrapper consumes only
 The in-process plugin replaces the ngram proposer with TOKEN_ITL before vLLM
 starts model workers.
 
+With tensor parallelism, only `--token-itl-draft-tp-rank` loads and runs the HF
+draft model. Its translated proxy candidates are broadcast to the other TP
+ranks, avoiding one full draft model copy per TP worker.
+
 ## Useful Flags
 
 - `--token-itl-draft-model`: ordinary HF draft model path.
@@ -76,6 +82,9 @@ starts model workers.
 - `--token-itl-draft-device`: move the HF draft model to a device.
 - `--token-itl-draft-device-map`: pass a Transformers `device_map`.
 - `--token-itl-draft-dtype`: `auto`, `float16`, `bfloat16`, or `float32`.
+- `--token-itl-draft-tp-rank`: local tensor-parallel rank that loads and runs
+  the HF draft model. Default: `0`; keep this at `0` for vLLM runtimes that use
+  message-queue object broadcast.
 - `--token-itl-dtw-window`: DTW window for alignment diagnostics.
 - `--no-token-itl-draft-cache`: disable per-request draft KV cache.
 - `--no-token-itl-allow-sampling`: disable speculation for non-greedy requests.
@@ -97,6 +106,10 @@ If you only want the conservative greedy route, run:
 ```bash
 vllm-itl-serve ... --no-token-itl-allow-sampling
 ```
+
+For MiniMax-style targets, start with `--generation-config vllm` and
+`--token-itl-num-speculative-tokens 2` or `3`, then increase only if acceptance
+rate remains healthy.
 
 ## Metrics
 

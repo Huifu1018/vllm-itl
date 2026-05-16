@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import logging
 from collections import OrderedDict
 from dataclasses import dataclass
@@ -207,6 +208,7 @@ class HFDraftProposer:
             and context_ids[: len(cached.input_ids)] == cached.input_ids
         ):
             suffix = context_ids[len(cached.input_ids) :]
+            past_key_values = self._fork_past_key_values(cached.past_key_values)
             suffix_tensor = torch.tensor(
                 [list(suffix)],
                 dtype=torch.long,
@@ -221,7 +223,7 @@ class HFDraftProposer:
                 outputs = self.draft_model(
                     input_ids=suffix_tensor,
                     attention_mask=attention_mask,
-                    past_key_values=cached.past_key_values,
+                    past_key_values=past_key_values,
                     use_cache=True,
                 )
             state = DraftRequestState(
@@ -332,9 +334,7 @@ class HFDraftProposer:
     def _fork_past_key_values(self, past_key_values: object) -> object:
         if past_key_values is None or not self.config.clone_draft_cache:
             return past_key_values
-        if hasattr(past_key_values, "to_legacy_cache"):
-            past_key_values = past_key_values.to_legacy_cache()
-        return _clone_nested_tensors(past_key_values)
+        return _clone_cache_for_reuse(past_key_values)
 
     def _alignment_stats(
         self,
@@ -433,3 +433,21 @@ def _clone_nested_tensors(value: object) -> object:
     if isinstance(value, dict):
         return {key: _clone_nested_tensors(item) for key, item in value.items()}
     return value
+
+
+def _clone_cache_for_reuse(value: object) -> object:
+    try:
+        return copy.deepcopy(value)
+    except Exception:
+        pass
+
+    to_legacy_cache = getattr(value, "to_legacy_cache", None)
+    from_legacy_cache = getattr(type(value), "from_legacy_cache", None)
+    if callable(to_legacy_cache) and callable(from_legacy_cache):
+        legacy_cache = _clone_nested_tensors(to_legacy_cache())
+        try:
+            return from_legacy_cache(legacy_cache)
+        except Exception:
+            logger.debug("Could not clone HF cache object from legacy cache.", exc_info=True)
+
+    return _clone_nested_tensors(value)

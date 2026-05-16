@@ -21,6 +21,17 @@ class ConfigTests(unittest.TestCase):
 
         self.assertIsNone(config.metrics_log_interval)
 
+    def test_draft_tp_rank_from_env(self):
+        with patch.dict("os.environ", {"VLLM_ITL_DRAFT_TP_RANK": "2"}):
+            config = TokenITLConfig.from_env()
+
+        self.assertEqual(config.draft_tp_rank, 2)
+
+    def test_draft_tp_rank_rejects_negative_values(self):
+        with patch.dict("os.environ", {"VLLM_ITL_DRAFT_TP_RANK": "-1"}):
+            with self.assertRaises(ValueError):
+                TokenITLConfig.from_env()
+
 
 if __name__ == "__main__":
     unittest.main()

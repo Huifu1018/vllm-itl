@@ -53,6 +53,7 @@ def _make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--token-itl-draft-device", default=None)
     parser.add_argument("--token-itl-draft-device-map", default=None)
     parser.add_argument("--token-itl-draft-dtype", default=None)
+    parser.add_argument("--token-itl-draft-tp-rank", type=int, default=None)
     parser.add_argument("--token-itl-dtw-window", type=int, default=None)
     parser.add_argument("--token-itl-max-cached-requests", type=int, default=None)
     parser.add_argument(
@@ -92,6 +93,7 @@ def _set_env_from_args(args: argparse.Namespace, draft_model: str) -> None:
         args.token_itl_draft_device_map,
     )
     _set_env_if_not_none("VLLM_ITL_DRAFT_DTYPE", args.token_itl_draft_dtype)
+    _set_env_if_not_none("VLLM_ITL_DRAFT_TP_RANK", args.token_itl_draft_tp_rank)
     _set_env_if_not_none("VLLM_ITL_DTW_WINDOW", args.token_itl_dtw_window)
     _set_env_if_not_none(
         "VLLM_ITL_MAX_CACHED_REQUESTS",

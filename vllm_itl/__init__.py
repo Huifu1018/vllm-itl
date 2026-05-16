@@ -11,7 +11,7 @@ from .prob_mapping import (
     selected_token_probabilities_from_logits,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 SUPPORTED_VLLM_VERSION = "0.15.1"
 TOKEN_ITL_ALGORITHM = "TOKEN_ITL"
 
