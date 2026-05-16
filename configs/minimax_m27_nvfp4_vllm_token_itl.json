@@ -6,6 +6,8 @@
   "algorithm": "TOKEN_ITL",
   "num_speculative_tokens": 2,
   "dtw_window": 8,
+  "draft_device": "cuda:0",
   "draft_tp_rank": 0,
-  "serve_example": "vllm-itl-serve nvidia/MiniMax-M2.7-NVFP4 --trust-remote-code --generation-config vllm --tensor-parallel-size 4 --token-itl-draft-model Qwen/Qwen2.5-1.5B-Instruct --token-itl-draft-tp-rank 0 --token-itl-num-speculative-tokens 2"
+  "max_context_tokens": 2048,
+  "serve_example": "vllm-itl-serve nvidia/MiniMax-M2.7-NVFP4 --trust-remote-code --generation-config vllm --tensor-parallel-size 4 --token-itl-draft-model Qwen/Qwen2.5-1.5B-Instruct --token-itl-draft-device cuda:0 --token-itl-draft-tp-rank 0 --token-itl-num-speculative-tokens 2 --token-itl-max-context-tokens 2048"
 }

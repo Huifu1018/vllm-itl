@@ -47,9 +47,11 @@ vllm-itl-serve nvidia/MiniMax-M2.7-NVFP4 \
   --generation-config vllm \
   --tensor-parallel-size 4 \
   --token-itl-draft-model Qwen/Qwen2.5-1.5B-Instruct \
+  --token-itl-draft-device cuda:0 \
   --token-itl-draft-tp-rank 0 \
   --token-itl-num-speculative-tokens 2 \
-  --token-itl-dtw-window 8
+  --token-itl-dtw-window 8 \
+  --token-itl-max-context-tokens 2048
 ```
 
 All ordinary vLLM arguments are forwarded unchanged. The wrapper consumes only
@@ -79,7 +81,9 @@ ranks, avoiding one full draft model copy per TP worker.
 - `--token-itl-max-draft-tokens`: cap draft-side token generation while trying
   to collect enough proxy tokens.
 - `--token-itl-max-context-tokens`: optional draft-side context truncation.
-- `--token-itl-draft-device`: move the HF draft model to a device.
+- `--token-itl-draft-device`: move the HF draft model to a device, for example
+  `cuda:0`. If this and `--token-itl-draft-device-map` are omitted,
+  Transformers normally leaves the draft on CPU, which is too slow for serving.
 - `--token-itl-draft-device-map`: pass a Transformers `device_map`.
 - `--token-itl-draft-dtype`: `auto`, `float16`, `bfloat16`, or `float32`.
 - `--token-itl-draft-tp-rank`: local tensor-parallel rank that loads and runs
@@ -109,7 +113,9 @@ vllm-itl-serve ... --no-token-itl-allow-sampling
 
 For MiniMax-style targets, start with `--generation-config vllm` and
 `--token-itl-num-speculative-tokens 2` or `3`, then increase only if acceptance
-rate remains healthy.
+rate remains healthy. Also set `--token-itl-draft-device cuda:0` and start with
+`--token-itl-max-context-tokens 2048` to cap draft prefill cost during the first
+benchmark pass.
 
 ## Metrics
 

@@ -95,6 +95,13 @@ class HFDraftProposer:
         )
         if not config.draft_device_map and config.draft_device:
             self.draft_model.to(config.draft_device)
+        elif not config.draft_device_map:
+            logger.warning(
+                "TOKEN_ITL draft model is using the Transformers default device. "
+                "This is usually CPU and will be slow; pass "
+                "--token-itl-draft-device cuda:0 or --token-itl-draft-device-map auto "
+                "for GPU serving."
+            )
         self.draft_model.eval()
 
         self._states: OrderedDict[str, DraftRequestState] = OrderedDict()
